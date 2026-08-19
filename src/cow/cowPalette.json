@@ -1,0 +1,41 @@
+{
+  "note": "Colour regions for the 《牛来》 sculpt, in scene space: Y up, facing +Z, feet at y=0, height 1.0. Shared by the browser shader and material pipeline.",
+  "colours": {
+    "hide": "#f7b015",
+    "muzzle": "#f0dabe",
+    "horn": "#ab8b70",
+    "hornTip": "#6b4f3f",
+    "brow": "#1e1814",
+    "sclera": "#faf8f4",
+    "pupil": "#1a1614",
+    "mouth": "#7a3340"
+  },
+  "shape": {
+    "muzzle": { "centre": [0, 0.648, 0.244], "radii": [0.152, 0.099, 0.132] },
+    "horn": {
+      "base": [0.168, 0.858, 0.06],
+      "tip": [0.258, 0.99, 0.05],
+      "baseRadius": 0.052,
+      "tipRadius": 0.024
+    },
+    "brow": {
+      "centre": [0.096, 0.82, 0.205],
+      "radii": [0.062, 0.0105, 0.062],
+      "tilt": 0.11
+    },
+    "sclera": { "centre": [0.091, 0.768, 0.208], "radii": [0.042, 0.0155, 0.055] },
+    "pupil": { "centre": [0.091, 0.767, 0.208], "radii": [0.0145, 0.0125, 0.055] },
+    "hand": { "centre": [0.268, 0.208, 0.052], "radii": [0.048, 0.044, 0.078] },
+    "hoofTop": 0.058
+  },
+  "rig": {
+    "jawLine": 0.615,
+    "jawLineDrop": 0.075,
+    "neckPivot": [0, 0.58, 0.0],
+    "jawHinge": [0, 0.7, -0.02],
+    "mouthLine": 0.621,
+    "mouthCentre": [0, 0.616, 0.21],
+    "mouthRadii": [0.075, 0.042, 0.095],
+    "torsoCentre": [0, 0.36, 0]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "牛来 AI",
+  "short_name": "牛来 AI",
+  "description": "打开麦克风，直接和会说话的牛来聊天。",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#11191d",
+  "background_color": "#11191d",
+  "display": "standalone"
+}

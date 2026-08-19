@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.next/
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.log
+*.tsbuildinfo
+.vercel
+
+# Source sculpt parts: only the built niulai.mesh is needed at runtime.
+public/niulai-3d/*.stl
+spec/cow-part-renders/
+.superpowers/

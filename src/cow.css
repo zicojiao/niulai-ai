@@ -1,0 +1,290 @@
+/*
+ * 《牛来》 borrows the film's poster language: warm rice paper, ink at the
+ * edges, and one very loud pair of brush characters. The bull is the only
+ * saturated thing on screen.
+ */
+#cow-app {
+  --paper: #efe7d7;
+  --paper-deep: #ded2bc;
+  --ink: #1f1b17;
+  --ink-soft: rgba(31, 27, 23, 0.58);
+  --ink-faint: rgba(31, 27, 23, 0.28);
+  --seal: #b4321f;
+  --font-cjk: "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC",
+    "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--font-cjk);
+  background:
+    radial-gradient(
+      ellipse 78% 58% at 50% 92%,
+      rgba(31, 27, 23, 0.20) 0%,
+      rgba(31, 27, 23, 0) 62%
+    ),
+    radial-gradient(ellipse 120% 90% at 50% 8%, #f6f0e3 0%, rgba(246, 240, 227, 0) 70%),
+    radial-gradient(circle at 18% 16%, rgba(31, 27, 23, 0.10), rgba(31, 27, 23, 0) 46%),
+    radial-gradient(circle at 86% 74%, rgba(31, 27, 23, 0.12), rgba(31, 27, 23, 0) 52%),
+    linear-gradient(168deg, var(--paper) 0%, var(--paper-deep) 100%);
+}
+
+/* A faint fibre grain keeps the flat gradients from banding. */
+#cow-app::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    repeating-linear-gradient(
+      92deg,
+      rgba(31, 27, 23, 0.035) 0 1px,
+      rgba(31, 27, 23, 0) 1px 3px
+    ),
+    repeating-linear-gradient(
+      3deg,
+      rgba(255, 255, 255, 0.06) 0 1px,
+      rgba(255, 255, 255, 0) 1px 4px
+    );
+}
+
+#cow-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  outline: none;
+  cursor: pointer;
+}
+
+body.is-booting #cow-scene,
+body.is-booting .cow-masthead,
+body.is-booting .cow-console {
+  opacity: 0;
+}
+
+.cow-masthead,
+.cow-console,
+#cow-scene {
+  transition: opacity 700ms ease 120ms;
+}
+
+.cow-masthead {
+  position: absolute;
+  top: clamp(24px, 4.4vh, 60px);
+  left: clamp(24px, 4.4vw, 66px);
+  z-index: 3;
+  max-width: min(38ch, 42vw);
+  pointer-events: none;
+}
+
+.cow-kicker {
+  margin: 0 0 clamp(10px, 1.6vh, 20px);
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: clamp(10px, 1.02vw, 13px);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.cow-title {
+  margin: 0;
+  font-size: clamp(64px, 11vw, 168px);
+  font-weight: 700;
+  line-height: 0.86;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.35);
+}
+
+.cow-romanised {
+  margin: clamp(6px, 1vh, 14px) 0 0;
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: clamp(11px, 1.1vw, 15px);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--seal);
+}
+
+.cow-blurb {
+  margin: clamp(16px, 2.4vh, 30px) 0 0;
+  font-size: clamp(13px, 1.15vw, 16px);
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+.cow-console {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(26px, 5vh, 62px);
+  z-index: 4;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 1.4vh, 16px);
+}
+
+.cow-talk {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: clamp(13px, 1.5vh, 18px) clamp(26px, 2.6vw, 40px);
+  border: 1px solid rgba(31, 27, 23, 0.16);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #26211c 0%, #14110e 100%);
+  color: #f4ecdb;
+  font-family: var(--font-cjk);
+  font-size: clamp(14px, 1.2vw, 17px);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.16) inset,
+    0 14px 34px -18px rgba(31, 27, 23, 0.9);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 260ms ease;
+}
+
+.cow-talk:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 20px 40px -18px rgba(31, 27, 23, 0.95);
+}
+
+.cow-talk:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+
+.cow-talk.is-connected {
+  background: linear-gradient(180deg, #c0391f 0%, #8f2413 100%);
+}
+
+.cow-talk.is-error {
+  background: linear-gradient(180deg, #4a2a22 0%, #2a1712 100%);
+}
+
+.cow-talk time {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 0.92em;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.86;
+}
+
+.cow-talk time.is-warning {
+  color: #ffd9a0;
+  opacity: 1;
+}
+
+.cow-hint {
+  margin: 0;
+  min-height: 1.5em;
+  font-size: clamp(12px, 1.05vw, 14px);
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.cow-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: linear-gradient(168deg, var(--paper) 0%, var(--paper-deep) 100%);
+  font-size: 13px;
+  letter-spacing: 0.28em;
+  color: var(--ink-soft);
+  transition: opacity 520ms ease;
+}
+
+body:not(.is-booting) .cow-loading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cow-loading p {
+  margin: 0;
+}
+
+.cow-loading-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--ink-faint);
+  border-top-color: var(--seal);
+  animation: cow-spin 1.15s linear infinite;
+}
+
+@keyframes cow-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cow-error {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: var(--paper);
+}
+
+.cow-error[hidden] {
+  display: none;
+}
+
+.cow-error button {
+  padding: 12px 26px;
+  border: 1px solid var(--ink-faint);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+}
+
+.agora-remote-audio {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .cow-masthead {
+    max-width: none;
+    right: clamp(24px, 4.4vw, 66px);
+  }
+
+  .cow-blurb {
+    display: none;
+  }
+
+  .cow-console {
+    bottom: clamp(52px, 9vh, 90px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cow-loading-mark {
+    animation-duration: 3s;
+  }
+}
