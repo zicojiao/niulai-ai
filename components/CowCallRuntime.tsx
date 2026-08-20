@@ -19,12 +19,37 @@ import { DEFAULT_AGENT_UID } from '@/lib/agora';
 import { isCallReady } from '@/src/callReadiness';
 import { dispatchCowAudioLevel } from '@/src/cow/cowEvents';
 import { smoothLevel } from '@/src/cow/audioLevel';
+import type { CowLocale } from '@/types/cow';
 import type { AgoraRuntimeProps } from '@/types/conversation';
 
 /** 60fps is wasted on a VU meter; the rig smooths between samples anyway. */
 const LEVEL_INTERVAL_MS = 50;
 
+const RUNTIME_COPY: Record<
+  CowLocale,
+  {
+    audioError: string;
+    agentError: string;
+    tokenError: string;
+    disconnected: string;
+  }
+> = {
+  zh: {
+    audioError: '音频通道启动失败。',
+    agentError: '牛来那边报了个错。',
+    tokenError: '语音令牌续期失败。',
+    disconnected: '实时连接断开了。',
+  },
+  en: {
+    audioError: 'The audio channel could not be started.',
+    agentError: 'Niu Lai ran into a problem.',
+    tokenError: 'The voice connection could not be renewed.',
+    disconnected: 'The live connection was lost.',
+  },
+};
+
 export default function CowCallRuntime({
+  locale,
   agoraData,
   rtmClient,
   onConnected,
@@ -33,6 +58,7 @@ export default function CowCallRuntime({
   onRuntimeError,
   onTokenWillExpire,
 }: AgoraRuntimeProps) {
+  const copy = RUNTIME_COPY[locale];
   const client = useRTCClient();
   const remoteUsers = useRemoteUsers();
   const [isReady, setIsReady] = useState(false);
@@ -100,8 +126,8 @@ export default function CowCallRuntime({
   useEffect(() => {
     const runtimeError = joinError ?? microphoneError ?? publishError;
     if (!runtimeError) return;
-    onRuntimeError(runtimeError.message || '音频通道启动失败。');
-  }, [joinError, microphoneError, onRuntimeError, publishError]);
+    onRuntimeError(runtimeError.message || copy.audioError);
+  }, [copy.audioError, joinError, microphoneError, onRuntimeError, publishError]);
 
   // The bull's mouth is driven straight off the agent's published audio: the
   // toolkit's transcript events land too late and too coarsely to lip-sync to.
@@ -144,7 +170,7 @@ export default function CowCallRuntime({
           return;
         }
         voiceAi.on(AgoraVoiceAIEvents.AGENT_ERROR, (_, error) => {
-          onRuntimeError(error.message || '牛来那边报了个错。');
+          onRuntimeError(error.message || copy.agentError);
         });
         voiceAi.on(AgoraVoiceAIEvents.MESSAGE_ERROR, (_, error) => {
           console.warn(
@@ -173,7 +199,15 @@ export default function CowCallRuntime({
         // The toolkit is already gone.
       }
     };
-  }, [agoraData.channel, client, isReady, onRuntimeError, rtcConnected, rtmClient]);
+  }, [
+    agoraData.channel,
+    client,
+    copy.agentError,
+    isReady,
+    onRuntimeError,
+    rtcConnected,
+    rtmClient,
+  ]);
 
   useEffect(() => {
     if (callReady && !callWasReady.current) {
@@ -199,16 +233,16 @@ export default function CowCallRuntime({
       ]);
     } catch (error) {
       onRuntimeError(
-        error instanceof Error ? error.message : '语音令牌续期失败。',
+        error instanceof Error ? error.message : copy.tokenError,
       );
     }
-  }, [client, onRuntimeError, onTokenWillExpire, rtmClient]);
+  }, [client, copy.tokenError, onRuntimeError, onTokenWillExpire, rtmClient]);
 
   useClientEvent(client, 'token-privilege-will-expire', renewTokens);
 
   useClientEvent(client, 'connection-state-change', (state) => {
     if (state === 'DISCONNECTED' && callWasReady.current) {
-      onRuntimeError('实时连接断开了。');
+      onRuntimeError(copy.disconnected);
     }
   });
 

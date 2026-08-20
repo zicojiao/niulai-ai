@@ -19,6 +19,7 @@ import {
 import { requestAgentStopOnPageExit } from '@/src/callExitPolicy';
 import { ensureMicrophonePermission } from '@/src/microphonePermission';
 import { settleOptionalOperation } from '@/src/optionalOperation';
+import type { CowLocale } from '@/types/cow';
 import type {
   AgentResponse,
   AgoraTokenData,
@@ -66,6 +67,79 @@ type PendingAgent = { agentId: string; stopToken: string };
 
 type ConnectionStep = 'permission' | 'agent' | 'microphone';
 
+const CONTROLLER_COPY: Record<
+  CowLocale,
+  {
+    steps: Record<ConnectionStep, string>;
+    call: {
+      end: string;
+      connecting: string;
+      ending: string;
+      retry: string;
+      start: string;
+    };
+    connectedHint: string;
+    errorHint: string;
+    idleHint: string;
+    tokenError: string;
+    agentError: string;
+    asleepError: string;
+    agentLeft: string;
+    callEnded: string;
+    rtmTimeout: string;
+    rtmFailure: string;
+  }
+> = {
+  zh: {
+    steps: {
+      permission: '请允许使用麦克风',
+      agent: '正在叫醒牛来…',
+      microphone: '正在准备麦克风…',
+    },
+    call: {
+      end: '结束对话',
+      connecting: '接通中…',
+      ending: '正在挂断…',
+      retry: '再试一次',
+      start: '跟牛来说话',
+    },
+    connectedHint: '直接说话就行，牛来在听。',
+    errorHint: '线路出了点问题。',
+    idleHint: '点它开口说话，按住拖动可以转着看。',
+    tokenError: '没能接通语音线路。',
+    agentError: '牛来没有醒过来。',
+    asleepError: '牛来这会儿叫不醒。',
+    agentLeft: '牛来走开了。',
+    callEnded: '这通对话已经结束了。',
+    rtmTimeout: '语音消息通道连接超时；继续使用音频通话。',
+    rtmFailure: '语音消息通道连接失败；继续使用音频通话。',
+  },
+  en: {
+    steps: {
+      permission: 'Allow microphone access to start',
+      agent: 'Waking Niu Lai…',
+      microphone: 'Getting your microphone ready…',
+    },
+    call: {
+      end: 'End conversation',
+      connecting: 'Connecting…',
+      ending: 'Ending…',
+      retry: 'Try again',
+      start: 'Talk to Niu Lai',
+    },
+    connectedHint: 'Speak naturally—Niu Lai is listening.',
+    errorHint: 'Something went wrong with the voice connection.',
+    idleHint: 'Click the bull to talk. Drag to look around.',
+    tokenError: 'The voice connection could not be started.',
+    agentError: 'Niu Lai did not wake up.',
+    asleepError: 'Niu Lai is having trouble waking up.',
+    agentLeft: 'Niu Lai left the conversation.',
+    callEnded: 'This conversation has ended.',
+    rtmTimeout: 'The message channel timed out; audio is still available.',
+    rtmFailure: 'The message channel is unavailable; audio is still available.',
+  },
+};
+
 async function parseError(response: Response, fallback: string) {
   try {
     const payload = (await response.json()) as { error?: string };
@@ -75,13 +149,8 @@ async function parseError(response: Response, fallback: string) {
   }
 }
 
-const STEP_COPY: Record<ConnectionStep, string> = {
-  permission: '请允许使用麦克风',
-  agent: '正在叫醒牛来…',
-  microphone: '正在准备麦克风…',
-};
-
-export default function CowCallController() {
+export default function CowCallController({ locale }: { locale: CowLocale }) {
+  const copy = CONTROLLER_COPY[locale];
   const [phase, setPhase] = useState<CowCallPhase>('idle');
   const [remaining, setRemaining] = useState(COW_CALL_LIMIT_SECONDS);
   const [errorMessage, setErrorMessage] = useState('');
@@ -189,9 +258,11 @@ export default function CowCallController() {
       }
 
       setConnectionStep('agent');
-      const tokenResponse = await fetch('/api/generate-agora-token');
+      const tokenResponse = await fetch(
+        `/api/generate-agora-token?locale=${locale}`,
+      );
       if (!tokenResponse.ok) {
-        throw new Error(await parseError(tokenResponse, '没能接通语音线路。'));
+        throw new Error(await parseError(tokenResponse, copy.tokenError));
       }
       const tokenData = (await tokenResponse.json()) as AgoraTokenIssue;
 
@@ -202,11 +273,11 @@ export default function CowCallController() {
           requester_id: tokenData.uid,
           channel_name: tokenData.channel,
           ticket: tokenData.ticket,
-          persona: 'niulai',
+          persona: locale === 'en' ? 'niulai-en' : 'niulai',
         } satisfies ClientStartRequest),
       }).then(async (response) => {
         if (!response.ok) {
-          throw new Error(await parseError(response, '牛来没有醒过来。'));
+          throw new Error(await parseError(response, copy.agentError));
         }
         const result = (await response.json()) as AgentResponse;
         const agent: PendingAgent = {
@@ -251,8 +322,8 @@ export default function CowCallController() {
       if (rtmSetup.status !== 'available') {
         console.warn(
           rtmSetup.status === 'timeout'
-            ? '语音消息通道连接超时；继续使用音频通话。'
-            : '语音消息通道连接失败；继续使用音频通话。',
+            ? copy.rtmTimeout
+            : copy.rtmFailure,
           rtmSetup.status === 'rejected' ? rtmSetup.error : undefined,
         );
       }
@@ -296,10 +367,19 @@ export default function CowCallController() {
       publishState(
         'error',
         COW_CALL_LIMIT_SECONDS,
-        error instanceof Error ? error.message : '牛来这会儿叫不醒。',
+        error instanceof Error ? error.message : copy.asleepError,
       );
     }
-  }, [publishState, stopAgent]);
+  }, [
+    copy.agentError,
+    copy.asleepError,
+    copy.rtmFailure,
+    copy.rtmTimeout,
+    copy.tokenError,
+    locale,
+    publishState,
+    stopAgent,
+  ]);
 
   useEffect(() => {
     const toggle = () => {
@@ -335,24 +415,31 @@ export default function CowCallController() {
   );
 
   const handleAgentLeft = useCallback(() => {
-    handleRuntimeError('牛来走开了。');
-  }, [handleRuntimeError]);
+    handleRuntimeError(copy.agentLeft);
+  }, [copy.agentLeft, handleRuntimeError]);
 
   const renewToken = useCallback(async (): Promise<string> => {
     const activeSession = sessionRef.current;
-    if (!activeSession) throw new Error('这通对话已经结束了。');
+    if (!activeSession) throw new Error(copy.callEnded);
     // The ticket carries the channel and uid, so renewal cannot be pointed at
     // another line. One combined token serves both RTC and RTM, as at join.
     const response = await fetch(
       `/api/generate-agora-token?ticket=${encodeURIComponent(
         activeSession.agoraData.ticket,
-      )}`,
+      )}&locale=${locale}`,
     );
     if (!response.ok) {
-      throw new Error(await parseError(response, '语音令牌续期失败。'));
+      throw new Error(
+        await parseError(
+          response,
+          locale === 'en'
+            ? 'The voice connection could not be renewed.'
+            : '语音令牌续期失败。',
+        ),
+      );
     }
     return ((await response.json()) as AgoraTokenIssue).token;
-  }, []);
+  }, [copy.callEnded, locale]);
 
   useEffect(() => {
     if (phase !== 'connected') return;
@@ -397,6 +484,7 @@ export default function CowCallController() {
           <CowCallRuntime
             agoraData={session.agoraData}
             rtmClient={session.rtmClient}
+            locale={locale}
             onConnected={handleConnected}
             onAgentLeft={handleAgentLeft}
             onMicrophoneState={handleMicrophoneState}
@@ -415,14 +503,14 @@ export default function CowCallController() {
         >
           <span className="cow-talk-label">
             {phase === 'connected'
-              ? '结束对话'
+              ? copy.call.end
               : phase === 'connecting'
-                ? '接通中…'
+                ? copy.call.connecting
                 : phase === 'ending'
-                  ? '正在挂断…'
+                  ? copy.call.ending
                   : phase === 'error'
-                    ? '再试一次'
-                    : '跟牛来说话'}
+                    ? copy.call.retry
+                    : copy.call.start}
           </span>
           {phase === 'connected' ? (
             <time className={remaining <= 60 ? 'is-warning' : ''}>
@@ -433,12 +521,12 @@ export default function CowCallController() {
 
         <p className="cow-hint" aria-live="polite">
           {phase === 'connecting'
-            ? STEP_COPY[connectionStep]
+            ? copy.steps[connectionStep]
             : phase === 'connected'
-              ? '直接说话就行，牛来在听。'
+              ? copy.connectedHint
               : phase === 'error'
-                ? errorMessage || '线路出了点问题。'
-                : '点它开口说话，按住拖动可以转着看。'}
+                ? errorMessage || copy.errorHint
+                : copy.idleHint}
         </p>
       </div>
     </>

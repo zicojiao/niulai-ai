@@ -30,6 +30,10 @@
     linear-gradient(168deg, var(--paper) 0%, var(--paper-deep) 100%);
 }
 
+#cow-app.cow-app--en {
+  --font-cjk: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 /* A faint fibre grain keeps the flat gradients from banding. */
 #cow-app::before {
   content: "";
@@ -117,6 +121,54 @@ body.is-booting .cow-console {
   color: var(--ink-soft);
 }
 
+.cow-language-switch {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  margin-top: clamp(18px, 3vh, 28px);
+  padding: 0 12px;
+  border: 1px solid var(--ink-faint);
+  border-radius: 999px;
+  pointer-events: auto;
+  color: var(--ink-soft);
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.cow-language-switch:hover {
+  border-color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.22);
+  color: var(--ink);
+}
+
+#cow-app.cow-app--en .cow-kicker {
+  letter-spacing: 0.22em;
+}
+
+#cow-app.cow-app--en .cow-title {
+  font-family: var(--font-playfair-display), Georgia, serif;
+  font-size: clamp(58px, 9vw, 144px);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 0.9;
+}
+
+#cow-app.cow-app--en .cow-romanised {
+  letter-spacing: 0.22em;
+}
+
+#cow-app.cow-app--en .cow-blurb {
+  max-width: 25ch;
+  line-height: 1.55;
+}
+
 .cow-console {
   position: absolute;
   left: 50%;
@@ -183,6 +235,10 @@ body.is-booting .cow-console {
 .cow-talk time.is-warning {
   color: #ffd9a0;
   opacity: 1;
+}
+
+#cow-app.cow-app--en .cow-talk {
+  letter-spacing: 0.04em;
 }
 
 .cow-hint {
@@ -259,6 +315,13 @@ body:not(.is-booting) .cow-loading {
   font-family: inherit;
   letter-spacing: 0.2em;
   cursor: pointer;
+}
+
+.cow-talk:focus-visible,
+.cow-language-switch:focus-visible,
+.cow-error button:focus-visible {
+  outline: 2px solid var(--seal);
+  outline-offset: 4px;
 }
 
 .agora-remote-audio {

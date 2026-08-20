@@ -2,16 +2,29 @@
 
 import { useEffect, useRef } from 'react';
 import CowCallController from './CowCallController';
+import { COW_PAGE_COPY } from '@/src/cowCopy';
+import type { CowLocale } from '@/types/cow';
 import '@/src/cow.css';
 
 const ENTRY_AUDIO_SRC = '/niulai-voice/niulai-mom.mp3';
 
-export default function CowExperience() {
+export default function CowExperience({ locale }: { locale: CowLocale }) {
   const entryAudioStarted = useRef(false);
+  const copy = COW_PAGE_COPY[locale];
 
   useEffect(() => {
     void import('@/src/cow/main');
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale === 'en' ? 'en' : 'zh-Hans';
+    document.body.dataset.locale = locale;
+    return () => {
+      if (document.body.dataset.locale === locale) {
+        delete document.body.dataset.locale;
+      }
+    };
+  }, [locale]);
 
   useEffect(() => {
     if (entryAudioStarted.current) return;
@@ -66,31 +79,37 @@ export default function CowExperience() {
   }, []);
 
   return (
-    <main id="cow-app">
-      <canvas id="cow-scene" aria-label="会说话的 3D 小牛「牛来」" />
+    <main id="cow-app" className={`cow-app--${locale}`}>
+      <canvas id="cow-scene" aria-label={copy.canvasLabel} />
 
       <header className="cow-masthead">
-        <p className="cow-kicker">一头会说话的小黄牛</p>
-        <h1 className="cow-title" lang="zh-Hans">
-          牛来
+        <p className="cow-kicker">{copy.kicker}</p>
+        <h1 className="cow-title" lang={copy.titleLang}>
+          {copy.title}
         </h1>
-        <p className="cow-romanised">Niu Lai</p>
-        <p className="cow-blurb">
-          打开麦克风，直接跟它聊。
-        </p>
+        <p className="cow-romanised">{copy.romanised}</p>
+        <p className="cow-blurb">{copy.blurb}</p>
+        <a
+          className="cow-language-switch"
+          href={copy.languageHref}
+          lang={locale === 'en' ? 'zh-Hans' : 'en'}
+          aria-label={locale === 'en' ? '切换到中文' : 'Switch to English'}
+        >
+          {copy.languageLabel}
+        </a>
       </header>
 
-      <CowCallController />
+      <CowCallController locale={locale} />
 
       <div id="cow-loading" className="cow-loading" role="status">
         <span className="cow-loading-mark" aria-hidden="true" />
-        <p>正在把牛来牵过来…</p>
+        <p>{copy.loading}</p>
       </div>
 
       <div id="cow-error" className="cow-error" hidden>
-        <p>没能加载牛来的 3D 模型。</p>
+        <p>{copy.modelError}</p>
         <button type="button" onClick={() => window.location.reload()}>
-          重新加载
+          {copy.reload}
         </button>
       </div>
     </main>

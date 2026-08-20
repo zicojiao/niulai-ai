@@ -13,12 +13,13 @@ function generateChannelName() {
 }
 
 export async function GET(request: NextRequest) {
+  const isEnglish = request.nextUrl.searchParams.get('locale') === 'en';
   const appId = process.env.NEXT_PUBLIC_AGORA_APP_ID;
   const appCertificate = process.env.NEXT_AGORA_APP_CERTIFICATE;
 
   if (!appId || !appCertificate || !process.env.CALL_TICKET_SECRET) {
     return NextResponse.json(
-      { error: '语音服务未配置。' },
+      { error: isEnglish ? 'Voice service is not configured.' : '语音服务未配置。' },
       { status: 500 },
     );
   }

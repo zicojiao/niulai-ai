@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
           model: 'gpt-4o-mini',
           systemMessages: [{ role: 'system', content: persona.prompt }],
           greetingMessage: greeting,
-          failureMessage: '哎，等我一下。',
+          failureMessage:
+            personaId === 'niulai-en' ? 'Hold on a second.' : '哎，等我一下。',
           maxHistory: 15,
           params: {
             max_tokens: 512,

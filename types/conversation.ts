@@ -19,7 +19,7 @@ export interface ClientStartRequest {
   channel_name: string;
   ticket: string;
   /** Which character answers. Defaults to 牛来. */
-  persona?: 'niulai';
+  persona?: 'niulai' | 'niulai-en';
 }
 
 export interface StopConversationRequest {
@@ -40,6 +40,7 @@ export type MicrophoneRuntimeState =
   | 'ready';
 
 export interface AgoraRuntimeProps {
+  locale: import('@/types/cow').CowLocale;
   agoraData: AgoraTokenData;
   rtmClient: RTMClient | null;
   onConnected: () => void;

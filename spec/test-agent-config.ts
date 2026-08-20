@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { Agent, AgoraClient, Area, DeepgramSTT, OpenAI } from 'agora-agents';
 import { createFishAudioTts } from '../lib/fishAudio';
-import { PERSONAS } from '../lib/personas';
+import { isPersonaId, PERSONAS } from '../lib/personas';
 
 const persona = PERSONAS.niulai;
 const agent = new Agent({
@@ -66,5 +66,11 @@ assert.equal(serialized.asr?.params?.language, 'zh-CN');
 assert.equal(serialized.advanced_features?.enable_rtm, true);
 assert.equal(serialized.parameters?.enable_error_message, true);
 assert.equal(serialized.parameters?.enable_metrics, true);
+
+const englishPersona = PERSONAS['niulai-en'];
+assert.equal(englishPersona.language, 'en-US');
+assert.match(englishPersona.prompt, /Speak English by default/);
+assert.match(englishPersona.greetings[0], /Niu Lai/);
+assert.equal(isPersonaId('niulai-en'), true);
 
 console.log('Niulai agent language contract checks passed.');

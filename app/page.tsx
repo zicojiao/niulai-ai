@@ -1,5 +1,5 @@
 import CowExperience from '@/components/CowExperience';
 
 export default function Home() {
-  return <CowExperience />;
+  return <CowExperience locale="zh" />;
 }
